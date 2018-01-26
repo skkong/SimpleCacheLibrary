@@ -2,7 +2,7 @@
 	/*
 		Date: 2017-11-24
 		Author: skkong@nate.com
-		Version: 1.0
+		Ver: 1.1
 
 		목적: 
 			프로그램 내에서 캐시 기능을 구현할 때 연관배열만 사용해도 충분하다.
@@ -34,9 +34,10 @@
 	class ArrayCache
 	{
 		private $hash_data = array();			// hash 저장소
-		private $max_size = 5;				// hash 최대 사이즈 50000
+		private $max_size = 5;					// hash 최대 사이즈 50000
 		private $delete_count = 0;				// 삭제건수
-		private $errormsg = "";				// 에러 메시지
+		private $errormsg = "";					// 에러 메시지
+		private $hash_file = "tmp_hash.json";	// 해시 파일 저장
 
 		public function __construct()
 		{
@@ -50,7 +51,30 @@
 			}	
 		}
 
-		// 키, 값 저장, expired date
+		/**
+		* 해시 내용을 파일에서 읽어온다.
+		*/
+		public function load()
+		{
+			if(file_exists($this->hash_file))
+				$this->hash_data = json_decode(file_get_contents($this->hash_file), true);
+		}
+		
+		/**
+		* 해시 내용을 파일로 저장한다.
+		*/
+		public function save()
+		{
+			file_put_contents($this->hash_file, json_encode($this->hash_data));
+		}
+
+		/**
+		* 키에 대한 값을 저장한다.
+		*
+		* @param 	string	$key	해시키
+		* @param	array	$value	값
+		* @param	integer	$ttl	해시저장 시간
+		*/
 		public function setValue($key, $value, $ttl = 86400)
 		{
 			$date = date("Y-m-d H:i:s",strtotime("+$ttl second"));
@@ -70,7 +94,12 @@
 			return true;
 		}
 		
-		// 값 조회
+		/**
+		* 해시갑 조회
+		*
+		* @param 	string	$key	해시키
+		* @return 	array			해시값
+		*/
 		public function getValue($key)
 		{
 			$result = "";
@@ -81,9 +110,10 @@
 			return $this->hash_data[$key]['value'];
 		}
 
-
-		// 특정 일자의 캐시를 지운다.
-		// 가장 오래된 캐시를 지운다.
+		/**
+		* 특정 일자의 캐시를 지운다.
+		* 가장 오래된 캐시를 지운다.
+		*/
 		private function cleanCache()
 		{
 			// 삭제 1단계: 캐시 사이즈를 초과하면 가장 오래된 캐시 항목을 지운다.
@@ -135,25 +165,35 @@
 
 		}
 
-		// 큭정 해시 항목을 삭제한다.
+		/**
+		* 큭정 해시 항목을 삭제한다.
+		*
+		* @param 	string	$key	해시키
+		*/
 		public function deleteCache($key)
 		{
 			unset($this->hash_data[$key]);
 		}
 
-		// 모든 캐시를 비운다.
+		/**
+		* 모든 캐시를 비운다.
+		*/
 		public function flush()
 		{
 			unset($this->hash_data);
 		}
 
-		// 캐시 내용을 출력한다.
+		/**
+		* 캐시 내용을 출력한다.
+		*/
 		public function printCache()
 		{
 			print_r($this->hash_data);
 		}
 
-		// 캐시 통계를 보여준다.
+		/**
+		* 캐시 통계를 보여준다.
+		*/
 		public function printStatics()
 		{
 			$total_count = count($this->hash_data);		// 전체 카운트
@@ -182,6 +222,8 @@
 
 	// 사용 예제
 	$cache = CacheFactory::create("array");
+	$cache->load();
+
 	// echo "문자열 캐시 test \n";
 	$cache->setValue("name1", "skkong");
 	$result = $cache->getValue("name1");
@@ -193,7 +235,7 @@
 
 
 	// echo "배열 캐시 test \n";
-	$cache->setValue("name2", array("skkong", "hongkildong"));
+	$cache->setValue("name2", array("skkong", "test"));
 	$result = $cache->getValue("name2");
 
 	if($result[0] == 'skkong')
@@ -203,7 +245,7 @@
 
 
 	//echo "연관배열 캐시 test \n";
-	$cache->setValue("name2", array("skkong" => 46, "gugim" => 36), 60);
+	$cache->setValue("name2", array("skkong" => 46, "test" => 36), 60);
 	$result = $cache->getValue("name2");
 
 	if($result['skkong'] == 46)
@@ -219,5 +261,8 @@
 
 	$cache->printCache();
 	$cache->printStatics();
+
+	$cache->save();
+
 ?>
 
