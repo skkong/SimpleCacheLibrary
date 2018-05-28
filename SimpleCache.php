@@ -220,6 +220,7 @@
 	}
 
 
+    /*
 	// 사용 예제
 	$cache = CacheFactory::create("array");
 	$cache->load();
@@ -253,6 +254,7 @@
 	else
 		echo "TEST 03 Fail. \n";
 
+    
 	for($i = 0; $i < 14; $i++)
 	{
 		$cache->setValue("test-".$i, $i+1);
@@ -263,6 +265,5 @@
 	$cache->printStatics();
 
 	$cache->save();
-
-?>
+	*/
 
